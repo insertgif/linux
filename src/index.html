@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>GIF Selector</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      background-color: #212324;
+      border: 0;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+    }
+
+    #app {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    #search-bar {
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 20px;
+    }
+
+    #search-input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #444;
+      border-radius: 8px;
+      background: #333;
+      color: white;
+      outline: none;
+    }
+
+    #search-input:focus {
+      border-color: #666;
+    }
+
+    #panel {
+      width: 100%;
+      max-width: 500px;
+      border-radius: 10px;
+      padding: 10px;
+      background-color: #eee;
+      display: none;
+    }
+
+    #panel.active {
+      display: block;
+    }
+
+    #slideshow {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 430px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 5px;
+    }
+
+    #slideshow img {
+      max-height: 410px;
+      max-width: 480px;
+      object-fit: contain;
+    }
+
+    #buttons {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    #buttons button {
+      border: 0;
+      background: #333;
+      color: white;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    #buttons button:hover {
+      background: #222;
+    }
+
+    #buttons button:active {
+      background: #111;
+    }
+
+    #status {
+      color: #999;
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .loading {
+      color: #666;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="search-bar">
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Search for GIFs... (press Enter)"
+        autofocus
+      />
+    </div>
+
+    <div id="panel">
+      <div id="slideshow"></div>
+      <div id="buttons">
+        <button id="prevButton" onclick="prevGif()">← Prev</button>
+        <button id="copy-url" onclick="copyUrl()">Copy URL</button>
+        <button id="copy-markdown" onclick="copyMarkdown()">Copy MD</button>
+        <button id="copy-image" onclick="copyImage()">Copy IMG</button>
+        <button id="nextButton" onclick="nextGif()">Next →</button>
+      </div>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <script>
+    const ENDPOINT = "https://tenor.googleapis.com/v2/search";
+    const API_KEY = "AIzaSyC8hZizs-XO8YuicB-IZx6p4xrPmBO_k4s";
+    const EXTRA_PARAMS = "client_key=my_test_app&limit=50";
+
+    let gifList = [];
+    let currentIndex = 0;
+
+    const searchInput = document.getElementById("search-input");
+    const panel = document.getElementById("panel");
+    const slideshow = document.getElementById("slideshow");
+    const status = document.getElementById("status");
+
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const query = searchInput.value.trim();
+        if (query) {
+          searchGifs(query);
+        }
+      }
+    });
+
+    async function searchGifs(query) {
+      panel.classList.remove("active");
+      slideshow.innerHTML = '<div class="loading">Loading...</div>';
+      status.textContent = "";
+
+      const url = `${ENDPOINT}?q=${encodeURIComponent(query)}&key=${API_KEY}&${EXTRA_PARAMS}`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        gifList = data.results.map(r => r.media_formats.gif.url);
+        currentIndex = 0;
+
+        if (gifList.length > 0) {
+          panel.classList.add("active");
+          loadGif();
+          updateStatus();
+        } else {
+          slideshow.innerHTML = '<div class="loading">No GIFs found</div>';
+        }
+      } catch (error) {
+        slideshow.innerHTML = '<div class="loading">Error loading GIFs</div>';
+        console.error(error);
+      }
+    }
+
+    function loadGif() {
+      slideshow.innerHTML = `<img src="${gifList[currentIndex]}">`;
+    }
+
+    function updateStatus() {
+      status.textContent = `${currentIndex + 1} / ${gifList.length}`;
+    }
+
+    function prevGif() {
+      if (gifList.length === 0) return;
+      currentIndex = (currentIndex - 1 + gifList.length) % gifList.length;
+      loadGif();
+      updateStatus();
+    }
+
+    function nextGif() {
+      if (gifList.length === 0) return;
+      currentIndex = (currentIndex + 1) % gifList.length;
+      loadGif();
+      updateStatus();
+    }
+
+    async function copyUrl() {
+      if (gifList.length === 0) return;
+      const currentUrl = gifList[currentIndex];
+      try {
+        await window.__TAURI_INTERNALS__.invoke('plugin:clipboard-manager|write_text', {
+          text: currentUrl
+        });
+        showCopied("URL copied!");
+      } catch (err) {
+        console.error('Copy failed:', err);
+        status.textContent = "Copy failed: " + err;
+      }
+    }
+
+    async function copyMarkdown() {
+      if (gifList.length === 0) return;
+      const currentUrl = gifList[currentIndex];
+      const markdown = `![insertgif](${currentUrl})`;
+      try {
+        await window.__TAURI_INTERNALS__.invoke('plugin:clipboard-manager|write_text', {
+          text: markdown
+        });
+        showCopied("Markdown copied!");
+      } catch (err) {
+        console.error('Copy failed:', err);
+        status.textContent = "Copy failed: " + err;
+      }
+    }
+
+    async function copyImage() {
+      if (gifList.length === 0) return;
+      const currentUrl = gifList[currentIndex];
+      const html = `<!doctype html><html><body><img src="${currentUrl}"/></body></html>`;
+      try {
+        await window.__TAURI_INTERNALS__.invoke('plugin:clipboard-manager|write_text', {
+          text: html
+        });
+        showCopied("HTML copied!");
+      } catch (err) {
+        console.error('Copy failed:', err);
+        status.textContent = "Copy failed: " + err;
+      }
+    }
+
+    function showCopied(message) {
+      status.textContent = message;
+      setTimeout(() => updateStatus(), 1500);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prevGif();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        nextGif();
+      } else if (e.key === "Tab" && document.activeElement !== searchInput) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          prevGif();
+        } else {
+          nextGif();
+        }
+      } else if (e.key === "Enter" && e.shiftKey) {
+        e.preventDefault();
+        copyUrl();
+      } else if (e.key === "Escape") {
+        window.close();
+      }
+    });
+  </script>
+</body>
+</html>
