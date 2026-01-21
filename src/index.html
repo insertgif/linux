@@ -15,6 +15,7 @@
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
+      transition: opacity 0.05s ease-out;
     }
 
     #app {
@@ -294,7 +295,13 @@
         e.preventDefault();
         copyUrl();
       } else if (e.key === "Escape") {
-        window.close();
+        e.preventDefault();
+        const img = slideshow.querySelector('img');
+        if (img) img.src = '';
+        slideshow.innerHTML = '';
+        panel.style.display = 'none';
+        const webview = window.__TAURI__.webviewWindow.getCurrentWebviewWindow();
+        webview.hide().then(() => webview.close());
       }
     });
   </script>
