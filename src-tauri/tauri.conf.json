@@ -12,6 +12,7 @@
         "title": "GIF Selector",
         "width": 540,
         "height": 680,
+        "center": true,
         "resizable": true,
         "fullscreen": false,
         "decorations": true,

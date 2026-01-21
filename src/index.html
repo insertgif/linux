@@ -74,6 +74,9 @@
       max-height: 410px;
       max-width: 480px;
       object-fit: contain;
+      image-rendering: auto;
+      image-rendering: -webkit-optimize-contrast;
+      will-change: auto;
     }
 
     #buttons {
@@ -194,6 +197,16 @@
 
     function loadGif() {
       slideshow.innerHTML = `<img src="${gifList[currentIndex]}">`;
+      preloadAdjacent();
+    }
+
+    function preloadAdjacent() {
+      const next = (currentIndex + 1) % gifList.length;
+      const prev = (currentIndex - 1 + gifList.length) % gifList.length;
+      [next, prev].forEach(idx => {
+        const img = new Image();
+        img.src = gifList[idx];
+      });
     }
 
     function updateStatus() {
