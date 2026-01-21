@@ -2,6 +2,8 @@
 
 Simple Linux GUI for searching and copying GIF URLs from Tenor.
 
+![Screenshot](screenshot.png)
+
 ## Features
 
 - Search GIFs via Tenor API
