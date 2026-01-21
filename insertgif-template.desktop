@@ -1,0 +1,10 @@
+[Desktop Entry]
+
+Type=Application
+Name=InsertGif
+Comment=GIF insertion tool
+Terminal=false
+Categories=Utility;
+StartupWMClass=insertgif
+StartupNotify=true
+
