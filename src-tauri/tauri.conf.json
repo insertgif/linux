@@ -26,7 +26,8 @@
           "identifier": "main-capability",
           "windows": ["main"],
           "permissions": [
-            "clipboard-manager:allow-write-text"
+            "clipboard-manager:allow-write-text",
+            "process:allow-exit"
           ]
         }
       ]

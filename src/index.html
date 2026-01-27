@@ -293,7 +293,14 @@
         }
       } else if (e.key === "Enter" && e.shiftKey) {
         e.preventDefault();
-        copyUrl();
+        const quit = async () => {
+          try {
+            await window
+              .__TAURI_INTERNALS__
+              .invoke('plugin:process|exit', { code: 0 });
+          } catch (err) {}
+        };
+        copyUrl().then(quit).catch(quit);
       } else if (e.key === "Escape") {
         e.preventDefault();
         const img = slideshow.querySelector('img');
