@@ -31,7 +31,11 @@ sudo apt install libwebkit2gtk-4.1-dev \
   file \
   libssl-dev \
   libayatana-appindicator3-dev \
-  librsvg2-dev
+  librsvg2-dev \
+  libsoup-3.0-dev \
+  libgtk-3-dev \
+  libglib2.0-dev \
+  pkg-config
 
 # Build
 cd ~/Documents/code/insertgif/src-tauri
