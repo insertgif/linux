@@ -121,6 +121,19 @@
       text-align: center;
       padding: 20px;
     }
+
+    #attribution {
+      color: #999;
+      margin-top: 8px;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 0.3px;
+    }
+
+    #attribution span {
+      font-weight: 700;
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -144,13 +157,12 @@
         <button id="nextButton" onclick="nextGif()">Next →</button>
       </div>
       <div id="status"></div>
+      <div id="attribution">Powered by <span>KLIPY</span></div>
     </div>
   </div>
 
   <script>
-    const ENDPOINT = "https://tenor.googleapis.com/v2/search";
-    const API_KEY = "AIzaSyC8hZizs-XO8YuicB-IZx6p4xrPmBO_k4s";
-    const EXTRA_PARAMS = "client_key=my_test_app&limit=50";
+    const { invoke } = window.__TAURI__.core;
 
     let gifList = [];
     let currentIndex = 0;
@@ -174,13 +186,10 @@
       slideshow.innerHTML = '<div class="loading">Loading...</div>';
       status.textContent = "";
 
-      const url = `${ENDPOINT}?q=${encodeURIComponent(query)}&key=${API_KEY}&${EXTRA_PARAMS}`;
-
       try {
-        const response = await fetch(url);
-        const data = await response.json();
+        const gifs = await invoke("search_gifs", { query });
 
-        gifList = data.results.map(r => r.media_formats.gif.url);
+        gifList = gifs.map(g => g.url);
         currentIndex = 0;
 
         if (gifList.length > 0) {
@@ -191,7 +200,7 @@
           slideshow.innerHTML = '<div class="loading">No GIFs found</div>';
         }
       } catch (error) {
-        slideshow.innerHTML = '<div class="loading">Error loading GIFs</div>';
+        slideshow.innerHTML = `<div class="loading">${error}</div>`;
         console.error(error);
       }
     }

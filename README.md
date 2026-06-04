@@ -1,12 +1,12 @@
 # insertgif
 
-Simple Linux GUI for searching and copying GIF URLs from Tenor.
+Simple Linux GUI for searching and copying GIF URLs from [KLIPY](https://klipy.com).
 
 ![Screenshot](screenshot.png)
 
 ## Features
 
-- Search GIFs via Tenor API
+- Search GIFs via the KLIPY API
 - Navigate with arrow keys or Tab
 - Copy URL, Markdown, or HTML to clipboard
 - Keyboard shortcuts:
@@ -14,6 +14,24 @@ Simple Linux GUI for searching and copying GIF URLs from Tenor.
   - `←/→` or `Tab/Shift+Tab` - Navigate
   - `Shift+Enter` - Copy URL
   - `Esc` - Close window
+
+## Configuration
+
+Get a KLIPY API key from the [Partner Panel](https://klipy.com/developers), then
+make it available one of two ways:
+
+```bash
+# Option A: environment variable
+export KLIPY_API_KEY=your_key_here
+
+# Option B: config file (preferred for the desktop launcher, which doesn't
+# inherit your shell env)
+mkdir -p ~/.config/insertgif
+echo 'KLIPY_API_KEY=your_key_here' > ~/.config/insertgif/env
+```
+
+The env var takes precedence over the config file. The test key allows 100
+req/min; production throughput needs approval via the Partner Panel.
 
 ## Build
 
