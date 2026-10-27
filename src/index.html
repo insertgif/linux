@@ -281,6 +281,12 @@
       }
     }
 
+    async function quit() {
+      try {
+        await window.__TAURI_INTERNALS__.invoke('plugin:process|exit', { code: 0 });
+      } catch (err) {}
+    }
+
     function showCopied(message) {
       status.textContent = message;
       setTimeout(() => updateStatus(), 1500);
@@ -302,22 +308,10 @@
         }
       } else if (e.key === "Enter" && e.shiftKey) {
         e.preventDefault();
-        const quit = async () => {
-          try {
-            await window
-              .__TAURI_INTERNALS__
-              .invoke('plugin:process|exit', { code: 0 });
-          } catch (err) {}
-        };
         copyUrl().then(quit).catch(quit);
       } else if (e.key === "Escape") {
         e.preventDefault();
-        const img = slideshow.querySelector('img');
-        if (img) img.src = '';
-        slideshow.innerHTML = '';
-        panel.style.display = 'none';
-        const webview = window.__TAURI__.webviewWindow.getCurrentWebviewWindow();
-        webview.hide().then(() => webview.close());
+        quit();
       }
     });
   </script>
